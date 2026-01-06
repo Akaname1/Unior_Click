@@ -54,6 +54,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // questo URL viene collegato al tasto 'Avvia Navigatore', creo la variabile linkNavigatore ci passo l'URL di maps e tramite il commando 'daddr' dico al dispositivo di calcolare il percorso
         const linkNavigatore = `https://maps.google.com/maps?daddr=${locale.lat},${locale.lng}`;
         // uso i backtick ovvero accenti gravi per poter inserire le variabili dentro HTML
+        // "data-id", "data-nome" ecc servono per nascondere queste informaioni dentro il bottone, cosi quando ci clicco sopra posso recuperarli facilmente poi nel codice.
         return `  
             <div class="card">
                 <h3>${locale.nome}</h3>
@@ -100,7 +101,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const localiDellaSede = listaLocali.filter(function(l) {
                 return l.sede === sedeObj.id;
             });
-
+            // controllo se ci sono locali per questa sede, se è vuota non creo nulla
             if (localiDellaSede.length > 0) {
                 // Creo il titolo della sezione
                 let htmlSezione = `
@@ -109,7 +110,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="griglia-card">
                 `;
 
-                // Aggiungo tutte le card di questa sede
+                // Aggiungo tutte le card di questa sede concatenando HTML generato da creadCard
                 localiDellaSede.forEach(function(locale) {
                     htmlSezione += creaCard(locale);
                 });
@@ -123,14 +124,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // cercaLocali serve per la ricerca in base a ciò che scrivo dentro la barra di ricerca.
     function cercaLocali(testo) {
+        // qui uso filter per cercare se il testo scritto è contenuto nel nome, indirizzo o tipo del locale
         const trovati = listaLocali.filter(function(l) {
             return l.nome.toLowerCase().includes(testo) ||
                 l.indirizzo.toLowerCase().includes(testo) ||
                 l.tipo.toLowerCase().includes(testo);
         });
 
-        griglia.innerHTML = '';
-
+        griglia.innerHTML = ''; // pulisco la griglia prima di far vedere i risultati
+        // se la lista dei trovati è vuota, mostro un messaggio di avviso
         if (trovati.length === 0) {
             griglia.innerHTML = '<p class="no-results">Nessuna convenzione trovata.</p>';
             return;
@@ -144,19 +146,21 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         htmlGriglia += '</div>';
-        griglia.innerHTML = htmlGriglia;
+        griglia.innerHTML = htmlGriglia; // qui inserisco il risultato finale nella pagina
     }
 
     //  FUNZIONI PER LE RECENSIONI
 
     // coloraStelle mi serve per colorare le stelle quando ci passo con mouse sopra oppure ci clicco.
     function coloraStelle(voto) {
-        const stelle = bloccoStelle.querySelectorAll('span');
+        const stelle = bloccoStelle.querySelectorAll('span'); // prendo tutte le stelle
+        // giro su ogni stella per decidere se accenderla o spegnerla
         stelle.forEach(function(stella) {
+            // se il numero della stella è minore o uguale al voto, le do la classe selezionata
             if (parseInt(stella.dataset.voto) <= voto) {
                 stella.classList.add('selezionata');
             } else {
-                stella.classList.remove('selezionata');
+                stella.classList.remove('selezionata'); // altrimenti la faccio tornare bianca
             }
         });
     }
@@ -172,9 +176,9 @@ document.addEventListener('DOMContentLoaded', function() {
         titoloRecensioni.textContent = `Recensioni per ${nome}`;
         finestraRecensioni.dataset.idLocale = id;  // salvo l'ID del locale nel modal per sapere a chi devo salvare la recensione dopo
         caricaCommenti(id); // caricaCommenti mi carica i vecchi commenti
-        finestraRecensioni.classList.remove('hidden');
+        finestraRecensioni.classList.remove('hidden'); // tolgo la classe 'hidden' per rendere visibile il modale
         resettaStelle();
-        testoRecensione.value = '';
+        testoRecensione.value = ''; // qui invece pulisco l'area di testo per scrivere una nuova recensione
     }
 
     function chiudiRecensioni() {
@@ -187,7 +191,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // successivamente prendo la parte della memoria salvata sul browser e la trasformo in oggetti JavaScript ovvero JSON.parse
         const tutteRecensioni = JSON.parse(localStorage.getItem('recensioni_studenti')) || {};
         const commentiLocale = tutteRecensioni[id] || [];
-
+        // se non ci sono commenti per questo locale, mostro un messaggio
         if (commentiLocale.length === 0) {
             listaCommenti.innerHTML = '<p class="no-reviews">Nessuna recensione ancora.</p>';
             return;
@@ -195,11 +199,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // forEach recensione vado a creare il blocco HTML con le stelle e il testo
         commentiLocale.forEach(function(recensione) {
-            const elementoRecensione = document.createElement('div');
-            elementoRecensione.classList.add('singolo-commento');
+            const elementoRecensione = document.createElement('div'); // creo un nuovo DIV che mi serve per come contenitore generico a livello di blocco per raggrupare altri elementi HTML
+            elementoRecensione.classList.add('singolo-commento'); // gli assegno la classe CSS(cascading style sheets) mi serve per definire l'aspetto e la formattazione di un sito, separando uk contenuto HTML
 
             // genero le 5 stelle
             let stelleHTML = '<div class="star-rating-display">';
+            // con il ciclo iterativo FOR cuiclo da 1 a 5 per creare le stelle gialle o bianche in base al voto
             for (let i = 1; i <= 5; i++) {
                 if (i <= recensione.voto) {
                     stelleHTML += '<span class="stelle-gialle">★</span>';
@@ -208,9 +213,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
             stelleHTML += '</div>';
-
+            // inserisco HTML delle stelle e il testo del commento dentro il div
             elementoRecensione.innerHTML = stelleHTML + '<p>' + recensione.testo + '</p>';
-            listaCommenti.appendChild(elementoRecensione);
+            listaCommenti.appendChild(elementoRecensione); // e poi aggiungo il commento comopleto alla lista
         });
     }
 
@@ -238,7 +243,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function apriMappa(nome, lat, lng) {
         titoloMappa.textContent = `Mappa per ${nome}`;
-        finestraMappa.classList.remove('hidden');
+        finestraMappa.classList.remove('hidden'); // per prima cosa rendo visibile il contenitore della mappa
         // siccome leaflet a volte si confonde e non disegna bene gli do un piccolo ritardo per aprire il pop-up e disegnare la mappa
         setTimeout(function() {
             if (mappaLeaflet) {
@@ -274,11 +279,11 @@ document.addEventListener('DOMContentLoaded', function() {
     filtroSede.addEventListener('change', function(e) {
         const idSelezionato = e.target.value;
         if(idSelezionato === 'page-top') {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            window.scrollTo({ top: 0, behavior: 'smooth' }); // effetto per tornare in cima
         } else {
             const elementoDaRaggiungere = document.getElementById(idSelezionato);
             if (elementoDaRaggiungere) {
-                elementoDaRaggiungere.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                elementoDaRaggiungere.scrollIntoView({ behavior: 'smooth', block: 'start' }); // qui scorro fino all'elemento specigico
             }
         }
     });
@@ -313,6 +318,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // qua vado a gestire la chiusura dei Modal o tramite la X o sullo sfondo
     tastoChiudiRecensioni.addEventListener('click', chiudiRecensioni);
     finestraRecensioni.addEventListener('click', function(e) {
+        // qui se clicco sullo sfondo scuro e non dentro la finestra bianca chiudo tutto
         if (e.target === finestraRecensioni) {
             chiudiRecensioni();
         }
@@ -321,9 +327,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // l'invio del form quando premo su invia recensione
     moduloRecensione.addEventListener('submit', function(e) {
         e.preventDefault(); // qua blocco il refresh della pagina
-        const testoNuovo = testoRecensione.value.trim();
+        const testoNuovo = testoRecensione.value.trim(); // tolgo gli spazzi vuoti sia al unizio che alla fien
         const idLocale = finestraRecensioni.dataset.idLocale;
-
+        // se ho scritto quclosa e ho dato un voto allora lo salvo
         if (testoNuovo && votoAttuale > 0) {
             salvaCommento(idLocale, votoAttuale, testoNuovo);
             caricaCommenti(idLocale); // caricaCommenti mi serve per mostrare il nuovo commento
